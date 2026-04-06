@@ -21,8 +21,9 @@ export interface TeamStats {
 // ── ESPN API ──────────────────────────────────────────────────────────────────
 // No auth required. Returns real live standings with W/L, last-10, pts for/against.
 
+// Correct endpoint: web.api.espn.com with season year (2026 = 2025-26 season)
 const ESPN_STANDINGS =
-  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/standings";
+  "https://site.web.api.espn.com/apis/v2/sports/basketball/nba/standings?season=2026&seasontype=2";
 
 async function fetchFromESPN(): Promise<Map<string, TeamStats>> {
   const res = await fetch(ESPN_STANDINGS, {
@@ -34,30 +35,35 @@ async function fetchFromESPN(): Promise<Map<string, TeamStats>> {
   const data = await res.json();
   const result = new Map<string, TeamStats>();
 
-  for (const group of data.groups ?? []) {
-    for (const entry of group.standings?.entries ?? []) {
+  // Response uses "children" (one per conference), each has standings.entries
+  for (const conference of data.children ?? []) {
+    for (const entry of conference.standings?.entries ?? []) {
       const abbr: string = entry.team?.abbreviation?.toUpperCase();
       if (!abbr) continue;
 
-      // Build a quick lookup from the stats array
-      const statsArr: { name: string; value: number }[] = entry.stats ?? [];
+      // Build stat lookup by name
+      const statsArr: { name: string; value: number; displayValue: string }[] =
+        entry.stats ?? [];
       const stat = (name: string) =>
-        statsArr.find((s: { name: string }) => s.name === name)?.value ?? 0;
+        statsArr.find((s) => s.name === name)?.value ?? 0;
+      const statStr = (name: string) =>
+        statsArr.find((s) => s.name === name)?.displayValue ?? "";
 
       const wins = Math.round(stat("wins"));
       const losses = Math.round(stat("losses"));
       const total = wins + losses;
-      const last10Wins = Math.round(stat("last10Wins") || stat("Last10Wins"));
-      const last10Losses = Math.round(stat("last10Losses") || stat("Last10Losses"));
-      const last10Total = last10Wins + last10Losses || 10;
 
-      // Point differential per game ≈ proxy for net rating
-      const ptsFor = stat("pointsFor") || stat("avgPointsFor");
-      const ptsAgainst = stat("pointsAgainst") || stat("avgPointsAgainst");
-      const pointDiff = ptsFor > 0 && ptsAgainst > 0 ? ptsFor - ptsAgainst : 0;
+      // "Last Ten Games" is a display string like "8-2"
+      const l10str = statStr("Last Ten Games") || statStr("streak");
+      const l10match = l10str.match(/(\d+)-(\d+)/);
+      const last10WinPct = l10match
+        ? parseInt(l10match[1]) / (parseInt(l10match[1]) + parseInt(l10match[2]))
+        : stat("winPercent");
 
-      // Pace varies ~95-105; use league average unless we have it
-      const pace = stat("pace") || 98.5;
+      // pointDifferential = avg point diff per game (proxy for net rating)
+      const pointDiff = stat("pointDifferential") || stat("differential");
+      const ptsFor = stat("avgPointsFor") || stat("pointsFor");
+      const ptsAgainst = stat("avgPointsAgainst") || stat("pointsAgainst");
 
       result.set(abbr, {
         abbreviation: abbr,
@@ -68,15 +74,15 @@ async function fetchFromESPN(): Promise<Map<string, TeamStats>> {
         netRating: pointDiff,
         offRating: ptsFor,
         defRating: ptsAgainst,
-        pace,
-        last10WinPct: last10Wins / last10Total,
+        pace: 98.5, // ESPN doesn't expose pace; use league average
+        last10WinPct,
         rollNetRtg: pointDiff,
-        rollPoss: pace,
+        rollPoss: 98.5,
       });
     }
   }
 
-  if (result.size < 25) throw new Error("ESPN returned incomplete data");
+  if (result.size < 25) throw new Error(`ESPN returned only ${result.size} teams`);
   return result;
 }
 

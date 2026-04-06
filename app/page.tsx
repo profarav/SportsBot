@@ -5,11 +5,11 @@ import { useRef, useEffect, useState } from "react";
 import Message from "@/components/Message";
 
 const SUGGESTED_QUERIES = [
-  "Predict OKC Thunder vs Boston Celtics — who wins?",
-  "How did Cleveland Cavaliers finish this season?",
-  "Show me the 2024-25 NBA standings",
+  "Predict OKC Thunder vs Detroit Pistons — who wins?",
+  "How are the Cleveland Cavaliers doing this season?",
+  "Show me the current 2025-26 NBA standings",
   "Compare Lakers vs Warriors — who has the better net rating?",
-  "Which teams had the best net rating in 2024-25?",
+  "Which teams have the best point differential this season?",
 ];
 
 export default function Home() {
