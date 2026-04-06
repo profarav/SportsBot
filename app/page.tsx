@@ -7,7 +7,7 @@ import Message from "@/components/Message";
 const SUGGESTED_QUERIES = [
   "Predict OKC Thunder vs Boston Celtics — who wins?",
   "How did Cleveland Cavaliers finish this season?",
-  "Show me the NBA standings",
+  "Show me the 2024-25 NBA standings",
   "Compare Lakers vs Warriors — who has the better net rating?",
   "Which teams had the best net rating in 2024-25?",
 ];
