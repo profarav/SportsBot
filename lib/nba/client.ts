@@ -60,10 +60,12 @@ async function fetchFromESPN(): Promise<Map<string, TeamStats>> {
         ? parseInt(l10match[1]) / (parseInt(l10match[1]) + parseInt(l10match[2]))
         : stat("winPercent");
 
-      // pointDifferential = avg point diff per game (proxy for net rating)
-      const pointDiff = stat("pointDifferential") || stat("differential");
+      // Compute per-game point differential from averages — this is the correct
+      // proxy for net rating. Do NOT use ESPN's "pointDifferential" field which
+      // is the raw season total (e.g. +700), not per game, and would break the model.
       const ptsFor = stat("avgPointsFor") || stat("pointsFor");
       const ptsAgainst = stat("avgPointsAgainst") || stat("pointsAgainst");
+      const pointDiff = (ptsFor > 0 && ptsAgainst > 0) ? ptsFor - ptsAgainst : 0;
 
       result.set(abbr, {
         abbreviation: abbr,

@@ -68,6 +68,25 @@ export default function Home() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {messages.length > 0 && (
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                background: "#1f2937",
+                border: "1px solid #374151",
+                borderRadius: "8px",
+                padding: "4px 10px",
+                color: "#9ca3af",
+                fontSize: "13px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              ← Back
+            </button>
+          )}
           <span style={{ fontSize: "20px" }}>🏀</span>
           <span style={{ fontWeight: 700, fontSize: "16px", letterSpacing: "-0.02em" }}>
             SportsBot
