@@ -2,7 +2,7 @@ import { streamText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { runAgentGraph } from "@/lib/agents/graph";
 
-export const maxDuration = 60;
+export const maxDuration = 10; // Vercel Hobby plan limit
 
 const SYSTEM_PROMPT = `You are SportsBot — an AI sports analyst specialized in NBA analytics.
 

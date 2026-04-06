@@ -56,6 +56,7 @@ export async function fetchTeamRollingStats(
     const res = await fetch(url, {
       headers: NBA_HEADERS,
       next: { revalidate: 3600 }, // Cache 1h
+      signal: AbortSignal.timeout(4000), // Fail fast — fall back to mock data
     });
 
     if (!res.ok) throw new Error(`NBA API ${res.status}`);
@@ -168,6 +169,7 @@ export async function fetchStandings(
     const res = await fetch(url, {
       headers: NBA_HEADERS,
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) throw new Error(`Standings API ${res.status}`);
 
